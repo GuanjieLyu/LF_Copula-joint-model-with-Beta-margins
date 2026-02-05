@@ -102,32 +102,6 @@ simulate_bivariate_beta_spatial <- function(
   )
 }
 
-dat_sim <- simulate_bivariate_beta_spatial(400, 0.1, seed = 20260123)
-dat = dat_sim
-
-
-##--------------------------------------------------------
-## check the spatial term
-##--------------------------------------------------------
-m_b <- gam(b2 ~ s(long, lat), data = dat_sim, method = "REML")
-
-## Filled contour surface with contour lines
-vis.gam(m_b,
-        view      = c("long", "lat"),
-        plot.type = "contour",
-        color     = "heat",      # gives yellow/orange/red style
-        contour.col = "deepskyblue3",
-        too.far   = 0.10,
-        n.grid    = 100,
-        main      = "Recovered Spatial Trend (mgcv)",
-        xlab      = "long",
-        ylab      = "lat")
-
-## Overlay observation locations (black dots)
-points(dat_sim$long, dat_sim$lat, pch = 16, cex = 0.25, col = "black")
-
-
-
 
 ##==========================================================
 ## Model fitting functions
@@ -231,17 +205,6 @@ copula_upper <- function(fit, dat, c1, c2) {
   
   mean(1 - p1 - p2 + p12)
 }
-
-
-##------------------------------------
-## test the functions
-##------------------------------------
-models <- fit_models(dat)
-tau(claytonCopula(models$joint_var$theta[1]));tau(claytonCopula(models$joint_const$theta[1]))
-independent_upper(models$gam1, models$gam2, dat, 0.7, 0.4)
-true_upper_prob(dat, 0.7, 0.4)
-copula_upper(models$joint_const, dat, 0.7, 0.4)
-copula_upper(models$joint_var, dat, 0.7, 0.4)
 
 ##===================================================
 ## Run for replicates
@@ -998,3 +961,4 @@ ggplot(sim_tau, aes(x = SampleSize, y = TauHat, fill = Model)) +
     fill = "Model"
   ) +
   theme(legend.position = "bottom")
+
