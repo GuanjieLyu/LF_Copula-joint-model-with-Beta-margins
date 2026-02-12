@@ -214,7 +214,6 @@ set.seed(123)
 n      <- 400    # sample size 
 n_rep  <- 100    # number of replicates     
 tau_evals <- c(0.1, 0.3, 0.6, 0.9)
-#tau_evals <- c(0.6, 0.9)
 results_list <- list()
 counter <- 1
 
@@ -404,8 +403,6 @@ tau_param_df <- map_dfr(results_ok, function(x) {
   )
 })
 
-saveRDS(tau_param_df, file = "tau_param_df1600.rds")
-
 tau_summary <- tau_param_df %>%
   pivot_longer(
     cols = c(tau_hat_jc, tau_hat_jv),
@@ -502,8 +499,6 @@ z_param_df <- map_dfr(results_ok, function(x) {
     jv_mu2_z  = extract_z_gjrm(fits$joint_var, "mu2")
   )
 })
-
-saveRDS(z_param_df, file = "z_param_df800.rds")
 
 
 true_mu1_z <- c(-1.0, -0.8)[1]
@@ -910,55 +905,4 @@ ggplot(plot_df, aes(x = SampleSize, y = Estimate, fill = Model)) +
   )
   
 
-
-##==============================================================
-## Tau box-plots
-##==============================================================
-tau_param_df400 <- readRDS("tau_param_df400.rds")
-tau_param_df800 <- readRDS("tau_param_df800.rds")
-tau_param_df1600 <- readRDS("tau_param_df1600.rds")
-
-Tau400  <- tau_param_df400  %>% mutate(SampleSize = 400)
-Tau800  <- tau_param_df800  %>% mutate(SampleSize = 800)
-Tau1600 <-  tau_param_df1600 %>% mutate(SampleSize = 1600)
-tau_data <- bind_rows(Tau400, Tau800, Tau1600)
-
-sim_tau <- tau_data %>%
-  select(tau_eval, SampleSize, tau_hat_jc, tau_hat_jv) %>%
-  pivot_longer(
-    cols = c(tau_hat_jc, tau_hat_jv),
-    names_to  = "Model",
-    values_to = "TauHat"
-  ) %>%
-  mutate(
-    Model = factor(
-      Model,
-      levels = c("tau_hat_jc", "tau_hat_jv"),
-      labels = c("JC-CD", "JC-VD")
-    ),
-    SampleSize = factor(SampleSize),
-    Tau = tau_eval
-  )
-
-# 3) boxplot (same theme + style)
-ggplot(sim_tau, aes(x = SampleSize, y = TauHat, fill = Model)) +
-  geom_boxplot(outlier.size = 0.7, width = 0.65,
-               position = position_dodge(width = 0.75)) +
-  facet_wrap(
-    ~ Tau, nrow = 2, scales = "free_y",
-    labeller = labeller(Tau = function(x) lapply(x, function(v) bquote(tau == .(v))))
-  ) +
-  scale_fill_manual(values = c(
-    "JC-CD" = "#A8D5A2",
-    "JC-VD" = "#E7A1B0"
-  )) +
-  geom_hline(aes(yintercept = Tau), linetype = "dashed", linewidth = 0.4) +
-  theme_bw(base_size = 13) +
-  labs(
-    title = expression("Estimated " * hat(tau) * " (Kendall's " * tau * ")"),
-    x = "Sample size",
-    y = expression(hat(tau)),
-    fill = "Model"
-  ) +
-  theme(legend.position = "bottom")
 
